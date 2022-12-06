@@ -28,7 +28,7 @@ public struct DataModel {
   }
 
   func topThreeSums() -> Int {
-    let sums = self.data.map { row in row.reduce(0, +) }.sorted(by: >)
+    let sums = self.data.map({ row in row.reduce(0, +) }).sorted(by: >)
     let topThreeSums = Array(sums[0..<min(3, sums.count)]).reduce(0, +)
     return topThreeSums
   }
