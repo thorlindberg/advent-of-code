@@ -2,7 +2,7 @@ public struct DataModel {
 
   var rounds: [Round]
   var score: Int {
-    return self.rounds.map({$0.score}).reduce(0, +)
+    return rounds.map({$0.score}).sum()
   }
 
   init(jsonFilename: String) {
@@ -11,13 +11,26 @@ public struct DataModel {
     let jsonObject = try! JSONSerialization.jsonObject(with: jsonData, options: [])
     let data = jsonObject as! [[String]]
 
-    self.rounds = data.map({
+    rounds = data.map({
       Round(
-        opponent: $0[0],
-        response: $0[1]
+        opponent: determineShape($0[0]),
+        response: determineShape($0[1])
       )
     })
 
+  }
+}
+
+func determineShape(_ string: String) -> Shape? {
+  switch string {
+  case "A", "X":
+    return .rock
+  case "B", "Y":
+    return .paper
+  case "C", "Z":
+    return .scissors
+  default:
+    return nil
   }
 }
 
@@ -86,4 +99,10 @@ enum Result {
   case win
   case lose
   case draw
+}
+
+extension Array where Element == Int {
+  func sum() -> Int {
+    return self.reduce(0, +)
+  }
 }
