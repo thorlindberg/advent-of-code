@@ -1,40 +1,77 @@
 public struct DataModel {
 
-  let jsonFilename: String
-  var data: [[String]]
+  var rounds: [Round]
+  var score: Int {
+    return self.rounds.map({$0.score}).reduce(0, +)
+  }
 
   init(jsonFilename: String) {
-    self.jsonFilename = jsonFilename
+
     let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFilename))
     let jsonObject = try! JSONSerialization.jsonObject(with: jsonData, options: [])
-    self.data = jsonObject as! [[String]]
-  }
+    let data = jsonObject as! [[String]]
 
-  var shapes: [[Shape?]]? {
-    if let data {
-      return data.map({
-        switch $0 {
-        case "A", "X":
-          return .rock
-        case "B", "Y":
-          return .paper
-        case "C", "Z":
-          return .scissors
-        default:
-          return nil
-        }
-      })
-    }
-    return nil
+    self.rounds = data.map({
+      Round(
+        opponent: $0[0],
+        response: $0[1]
+      )
+    })
+
   }
-  
-  var score: Int? {
-    if let shapes {
-      return shapes.map({
-        point($0[1]) + result(battle($0[0], $0[1]))
-      }).reduce(0, +)
+}
+
+struct Round {
+  let opponent: Shape
+  let response: Shape
+  var score: Int {
+
+    var points: Int = 0
+    var result: Result?
+
+    switch (opponent, response) {
+    case (.rock, .rock):
+      result = .draw
+    case (.rock, .paper):
+      result = .win
+    case (.rock, .scissors):
+      result = .lose
+    case (.paper, .rock):
+      result = .lose
+    case (.paper, .paper):
+      result = .draw
+    case (.paper, .scissors):
+      result = .win
+    case (.scissors, .rock):
+      result = .win
+    case (.scissors, .paper):
+      result = .lose
+    case (.scissors, .scissors):
+      result = .draw
     }
-    return nil
+
+    switch response {
+    case .rock:
+      points += 1
+    case .paper:
+      points += 2
+    case .scissors:
+      points += 3
+    }
+
+    if let result {
+      switch result {
+      case .win:
+        points += 6
+      case .lose:
+        points += 0
+      case .draw:
+        points += 3
+      }
+    }
+
+    return points
+    
   }
 
 }
@@ -49,49 +86,4 @@ enum Result {
   case win
   case lose
   case draw
-}
-
-func battle(_ opponent: Shape, _ response: Shape) -> Result {
-
-  if opponent == response {
-    return .draw
-  }
-
-  switch (opponent, response) {
-  case (.rock, .paper):
-    return .win
-  case (.rock, .scissors):
-    return .lose
-  case (.paper, .rock):
-    return .lose
-  case (.paper, .scissors):
-    return .win
-  case (.scissors, .rock):
-    return .win
-  case (.scissors, .paper):
-    return .lose
-  }
-
-}
-
-func point(_ shape: Shape) -> Int {
-  switch shape {
-  case .rock:
-    return 1
-  case .paper:
-    return 2
-  case .scissors:
-    return 3
-  }
-}
-
-func result(_ result: Result) -> Int {
-  switch result {
-  case .win:
-    return 6
-  case .lose:
-    return 0
-  case .draw:
-    return 3
-  }
 }
