@@ -1,104 +1,92 @@
 public struct DataModel {
 
-  var rounds: [Round]
-  var score: Int {
-    return rounds.map({$0.score}).sum()
-  }
+    var rounds: [Round?]
+    var score: Int {
+        return rounds.map({$0?.score ?? 0}).sum()
+    }
 
-  init(jsonFilename: String) {
+    init(jsonFilename: String) {
 
-    let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFilename))
-    let jsonObject = try! JSONSerialization.jsonObject(with: jsonData, options: [])
-    let data = jsonObject as! [[String]]
+        let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFilename))
+        let jsonObject = try! JSONSerialization.jsonObject(with: jsonData, options: [])
+        let data = jsonObject as! [[String]]
 
-    rounds = data.map({
-      Round(
-        opponent: determineShape($0[0]),
-        response: determineShape($0[1])
-      )
-    })
+        rounds = data.map({
+            if let opponent = $0[0].sign, let response = $0[1].sign {
+                return Round(
+                    opponent: opponent,
+                    response: response
+                )
+            }
+            return nil
+        })
 
-  }
-}
+    }
 
-func determineShape(_ string: String) -> Shape? {
-  switch string {
-  case "A", "X":
-    return .rock
-  case "B", "Y":
-    return .paper
-  case "C", "Z":
-    return .scissors
-  default:
-    return nil
-  }
 }
 
 struct Round {
-  let opponent: Shape
-  let response: Shape
-  var score: Int {
-
-    var points: Int = 0
-    var result: Result?
-
-    switch (opponent, response) {
-    case (.rock, .rock):
-      result = .draw
-    case (.rock, .paper):
-      result = .win
-    case (.rock, .scissors):
-      result = .lose
-    case (.paper, .rock):
-      result = .lose
-    case (.paper, .paper):
-      result = .draw
-    case (.paper, .scissors):
-      result = .win
-    case (.scissors, .rock):
-      result = .win
-    case (.scissors, .paper):
-      result = .lose
-    case (.scissors, .scissors):
-      result = .draw
+    let opponent: HandSign
+    let response: HandSign
+    var result: Result {
+        if opponent == response {
+            return .draw
+        } else if opponent == .rock && response == .scissors {
+            return .lose
+        } else if opponent == .scissors && response == .paper {
+            return .lose
+        } else if opponent == .paper && response == .rock {
+            return .lose
+        } else {
+            return .win
+        }
     }
-
-    switch response {
-    case .rock:
-      points += 1
-    case .paper:
-      points += 2
-    case .scissors:
-      points += 3
+    var score: Int {
+        return response.points + result.points
     }
-
-    if let result {
-      switch result {
-      case .win:
-        points += 6
-      case .lose:
-        points += 0
-      case .draw:
-        points += 3
-      }
-    }
-
-    return points
-    
-  }
-
 }
 
-enum Shape {
+enum HandSign {
   case rock
   case paper
   case scissors
+}
+
+extension HandSign {
+  var points: Int {
+    switch self {
+    case .rock: return 1
+    case .paper: return 2
+    case .scissors: return 3
+    }
+  }
 }
 
 enum Result {
   case win
   case lose
   case draw
+}
+
+extension Result {
+  var points: Int {
+    switch self {
+    case .win: return 6
+    case .lose: return 0
+    case .draw: return 3
+    }
+  }
+}
+
+extension String {
+  var sign: HandSign? {
+    switch self {
+    case "A", "X": return .rock
+    case "B", "Y": return .paper
+    case "C", "Z": return .scissors
+    default: return nil
+    }
+  }
 }
 
 extension Array where Element == Int {
