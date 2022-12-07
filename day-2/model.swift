@@ -1,49 +1,49 @@
 public struct DataModel {
 
-    var rounds: [Round?]
-    var score: Int {
-        return rounds.map({$0?.score ?? 0}).sum()
-    }
+  var rounds: [Round?]
+  var score: Int {
+    return rounds.map({ $0?.score ?? 0 }).sum()
+  }
 
-    init(jsonFilename: String) {
+  init(jsonFilename: String) {
 
-        let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFilename))
-        let jsonObject = try! JSONSerialization.jsonObject(with: jsonData, options: [])
-        let data = jsonObject as! [[String]]
+    let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFilename))
+    let jsonObject = try! JSONSerialization.jsonObject(with: jsonData, options: [])
+    let data = jsonObject as! [[String]]
 
-        rounds = data.map({
-            if let opponent = $0[0].sign, let response = $0[1].sign {
-                return Round(
-                    opponent: opponent,
-                    response: response
-                )
-            }
-            return nil
-        })
+    rounds = data.map({
+      if let opponent = $0[0].sign, let response = $0[1].sign {
+        return Round(
+          opponent: opponent,
+          response: response
+        )
+      }
+      return nil
+    })
 
-    }
+  }
 
 }
 
 struct Round {
-    let opponent: HandSign
-    let response: HandSign
-    var result: Result {
-        if opponent == response {
-            return .draw
-        } else if opponent == .rock && response == .scissors {
-            return .lose
-        } else if opponent == .scissors && response == .paper {
-            return .lose
-        } else if opponent == .paper && response == .rock {
-            return .lose
-        } else {
-            return .win
-        }
+  let opponent: HandSign
+  let response: HandSign
+  var result: Result {
+    if opponent == response {
+      return .draw
+    } else if opponent == .rock && response == .scissors {
+      return .lose
+    } else if opponent == .scissors && response == .paper {
+      return .lose
+    } else if opponent == .paper && response == .rock {
+      return .lose
+    } else {
+      return .win
     }
-    var score: Int {
-        return response.points + result.points
-    }
+  }
+  var score: Int {
+    return response.points + result.points
+  }
 }
 
 enum HandSign {
