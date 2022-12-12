@@ -1,0 +1,1 @@
+let dataModel = DataModel(path: "input.txt")

@@ -3,13 +3,25 @@ import Foundation
 public struct DataModel {
 
   var data: [String]
-  var repetitions: [String?] {
-    return data.map({
-      $0.halves.repeated
+  var priorities: [[Int?]] {
+    data.map({
+      string in string.map({
+        character in character.priority
+      })
+    })
+  }
+  var halves: [[[Int?]]] {
+    priorities.map({
+      array in array.halves
+    })
+  }
+  var repetitions: [Int] {
+    halves.map({
+      array in array.firstRepeated
     })
   }
   var sum: Int {
-    return repetitions.map({ $0?.priority ?? 0 }).sum()
+    repetitions.sum
   }
 
   init(jsonFilename: String) {
@@ -20,30 +32,26 @@ public struct DataModel {
 
 }
 
-extension String {
-  var halves: [String] {
-    let halfLength = self.count / 2
-    let firstHalf = self.prefix(halfLength)
-    let secondHalf = self.suffix(halfLength)
-    return [String(firstHalf), String(secondHalf)]
+extension Array {
+  var halves: [[Element]] {
+    let mid = self.count / 2
+    let firstHalf = Array(self[0..<mid])
+    let secondHalf = Array(self[mid..<self.count])
+    return [firstHalf, secondHalf]
   }
 }
 
-extension Array where Element == String {
-    var repeated: String? {
-        var seenLetters = Set<String>()
-        for char in self {
-            if seenLetters.contains(char) {
-                return String(char)
-            } else {
-                seenLetters.insert(char)
-            }
-        }
-        return nil
-    }
+extension Array where Element == [[Int?]] {
+  var firstRepeated: Int {
+    let set1 = Set(self[0].compactMap({$0}))
+    let set2 = Set(self[1].compactMap({$0}))
+    let intersection = set1.intersection(set2)
+    let duplicateElements = Array(intersection).first
+    return duplicateElements
+  }
 }
 
-extension String {
+extension Character {
   var priority: Int? {
     switch self {
     case "a": return 1
@@ -104,7 +112,7 @@ extension String {
 }
 
 extension Array where Element == Int {
-  func sum() -> Int {
-    return self.reduce(0, +)
+  var sum: Int {
+    self.reduce(0, +)
   }
 }
