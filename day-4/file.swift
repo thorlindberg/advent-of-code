@@ -1,3 +1,5 @@
+import Foundation
+
 public struct File {
     func read(_ path: String) -> String? {
         let url = URL(fileURLWithPath: path)

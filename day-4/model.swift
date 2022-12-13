@@ -2,10 +2,10 @@ import Foundation
 
 public struct DataModel {
 
-  var data: [Range]
+  var data: [Range<Int>]
 
   init(path: String) {
-    var file: String? = File.read(path)
+    let file: String? = File.read(path)
     if let file {
       let pairs: [String] = file.components(separatedBy: "\n")
       pairs.map({
