@@ -1,3 +1,5 @@
+import Foundation
+
 public struct DataModel {
 
   var rounds: [Round?]
